@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <functional>
 
+#include "suffix.hpp"
+
 namespace alice {
 
 inline std::size_t low_bit(std::size_t x) 
@@ -14,20 +16,31 @@ inline std::size_t low_bit(std::size_t x)
 template <class T, std::size_t N, class Combination = std::plus<T> >
 class binary_indexed_tree {
 private:
-	array<T, N> tree;
+	T tree[N];
 
 public:
 	typedef T value_type;
 	typedef std::size_t size_type;
 
-	binary_indexed_tree() noexcept(std::is_nothrow_default_constructible<value_type>::value) 
-#if __cplusplus >= 11
+	binary_indexed_tree()
+#ifdef ALICE_CPP11
+	= default;
+#else
 	{}
+#endif
+
+	binary_indexed_tree(const binary_indexed_tree& copied) {
+		std::copy(tree, tree + N, copied.tree);
+	}
+
+	binary_indexed_tree(const value_type& repeated_value);
 
 	template <class InputIterator>
-	binary_indexed_tree(InputIterator first) noexcept(std::is_nothrow_copy_constructible<value_type>::value) {
+	binary_indexed_tree(InputIterator first);
 
-	}
+	T query(size_type at);
+
+	void change(size_type at);
 };
 
 }
