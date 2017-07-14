@@ -13,10 +13,6 @@ namespace alice {
 inline std::size_t low_bit(std::size_t x)
 { return x & (~x + 1); }
 
-template<class T, class Combination>
-inline T self_combinate(Combination comb, const T& t)
-{ return comb(t, t); }
-
 template <class T, std::size_t N, class Combination = std::plus<T> >
 class binary_indexed_tree {
 private:
@@ -41,11 +37,11 @@ public:
 
 	binary_indexed_tree(const value_type& repeated_value,
 		const Combination& comb = Combination()) : comb(comb) {
-		for (size_type i = 0; i < N; ++i)
-			if (i & 1)
-				tree[i] = self_combinate(comb, tree[(low_bit(i + 1) >> 1) - 1]);
-			else
-				tree[i] = repeated_value;
+		tree[0] = repeated_value;
+		for (size_type i = 2; i <= N; i <<= 1)
+			tree[i - 1] = comb(tree[(i >> 1) - 1], tree[(i >> 1) - 1]);
+		for (size_type i = 1; i < N; ++i)
+			tree[i] = tree[low_bit(i + 1) - 1];
 	}
 
 	template <class InputIterator>
@@ -63,6 +59,18 @@ public:
 			tree[at - 1] = comb(tree[at - 1], v);
 	}
 };
+
+template <class T, std::size_t N, class Combination>
+template <class InputIterator>
+binary_indexed_tree<T, N, Combination>::
+	binary_indexed_tree(InputIterator first,
+		const Combination& comb = Combination()) : comb(comb) {
+		for (size_type i = 0; i < N; ++i) {
+			tree[i] = *(first++);
+			for (size_type bit = low_bit(i + 1) >> 1; bit; bit >>= 1)
+				tree[i] = comb(tree[i], tree[i - bit]);
+		}
+}
 
 }
 
