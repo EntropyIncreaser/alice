@@ -3,8 +3,8 @@
 
 #include <cstddef>
 
+#include <deque>
 #include <functional>
-#include <stack>
 
 namespace alice {
 
